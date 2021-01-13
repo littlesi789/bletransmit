@@ -5,7 +5,7 @@ from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
 
 
-mongo_db_uri = "mongodb://admin:2baVmUJFrBj2epVU@192.168.0.109:27017/" # TODO: change this...
+mongo_db_uri = "mongodb://piclient:82p9vjhk4akp2fd2@172.16.10.202:27017/BBCT" # TODO: change this...
 #---------------------------------Connection-------------------------------------
 try:
     assert mongo_db_uri is not None
