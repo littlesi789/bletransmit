@@ -6,7 +6,7 @@ from datetime import datetime
 import log_service
 
 #---------------------------------Configuration-------------------------------------
-send_interval_to_database = 10 # in seconds
+send_interval_to_database = 10 # in interval_unit
 interval_unit = 's'     # S - Seconds
                         # M - Minutes
                         # H - Hours
