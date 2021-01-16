@@ -1,7 +1,7 @@
 import os, threading
 import csv
 import pymongo
-from datetime import datetime
+from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
 
@@ -23,7 +23,7 @@ error_file2 = "logs/error_tier_2.log"
 
 
 #---------------------------------Helper Functions-------------------------------------
-def _write_file_to_database(filename, error_file, append=False):
+def _write_file_to_database(filename, error_file, append=False, endTime = None):
     # First to write error data last time
     "Save a log in csv format to json and upload to the database"
     if append:
@@ -40,12 +40,17 @@ def _write_file_to_database(filename, error_file, append=False):
             log_list.append(row)
             
         for _ent in log_list:
-            # _ent["_id"] = 1 # Used for test writing error
-            _ent["time"] = datetime.fromisoformat(_ent["time"])
-            try:
-                x = mycol.insert_one(_ent)
-            except Exception as e:
-                print("Writing errors to db:", _ent, e)
+            if endTime is not None and datetime.now() < endTime:
+                # _ent["_id"] = 1 # Used for test writing error
+                _ent["time"] = datetime.fromisoformat(_ent["time"])
+                try:
+                    x = mycol.insert_one(_ent)
+                except Exception as e:
+                    print("Writing errors to db:", _ent, e)
+                    _ent["time"] = _ent["time"].isoformat()
+                    error_list.append(_ent)
+            else:
+                print("Writing time to db exceeded:", _ent)
                 _ent["time"] = _ent["time"].isoformat()
                 error_list.append(_ent)
         # Search 
@@ -59,20 +64,22 @@ def _write_file_to_database(filename, error_file, append=False):
             writer.writerows(error_list)
 
 
-def _save_to_database(filename):
+def _save_to_database(filename, interval):
     """
     Write the history data to the database.
     
     Two tier error files to save entries that fail to be saved to DB
     """
+    end_time_part_1 = datetime.now() + timedelta(seconds=int(interval * 0.4))
+    end_time_part_2 = datetime.now() + timedelta(seconds=int(interval * 0.8))
     # First write the last error files 
     if os.path.exists(error_file1):
         print("Rewrite the 1st tier error file")
-        _write_file_to_database(error_file1, error_file2, append=True)
+        _write_file_to_database(error_file1, error_file2, append=True, endTime=end_time_part_1)
 
     # Then write the current logfile
     print("Write the current log", filename)
-    _write_file_to_database(filename, error_file1)
+    _write_file_to_database(filename, error_file1, endTime=end_time_part_2)
 
 
 
@@ -99,7 +106,7 @@ class myTimeRotateFileHandler(TimedRotatingFileHandler):
             if os.path.exists(source):
                 os.rename(source, dest)
                 print("New saved log file: {}".format(dest))
-                sendFunc = threading.Thread(target=_save_to_database, args=(dest,))
+                sendFunc = threading.Thread(target=_save_to_database, args=(dest, self.interval,))
                 sendFunc.start()
         else:
             self.rotator(source, dest)
