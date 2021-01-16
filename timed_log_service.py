@@ -51,7 +51,6 @@ def _write_file_to_database(filename, error_file, append=False, endTime = None):
                     error_list.append(_ent)
             else:
                 print("Writing time to db exceeded:", _ent)
-                _ent["time"] = _ent["time"].isoformat()
                 error_list.append(_ent)
         # Search 
         os.remove(filename)
