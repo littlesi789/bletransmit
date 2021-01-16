@@ -14,7 +14,7 @@ except:
                     \nYou need to change the above 'mongo_db_uri' from None to the ip of the database.\
                     \nYou can use ifconfig command in linux to find the ip address...\
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-myclient = pymongo.MongoClient(mongo_db_uri)
+myclient = pymongo.MongoClient(mongo_db_uri, connectTimeoutMS=1000, serverSelectionTimeoutMS=1100)
 mydb = myclient["BBCT"] # db names
 mycol = mydb["beacons"] # collection names
 
