@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
 
-mongo_db_uri = "mongodb://piclient:82p9vjhk4akp2fd2@172.16.10.202:27017/BBCT" # TODO: change this...
+mongo_db_uri = "mongodb://:27017/BBCT" # TODO: change this...
 #---------------------------------Connection-------------------------------------
 try:
     assert mongo_db_uri is not None
@@ -26,9 +26,9 @@ error_file2 = "logs/error_tier_2.log"
 #---------------------------------Helper Functions-------------------------------------
 def _write_file_to_database(filename, error_file, append=False, endTime = None):
     try:
-        ip = os.system("hostname -I")
+        ip = os.popen("hostname -I").read().strip()
+        print(ip)
         x = myip.insert_one({'ip':ip})
-        print("ip:", ip)
     except Exception as e:
         print("Failed to write ip address to db. Continue...")
 
