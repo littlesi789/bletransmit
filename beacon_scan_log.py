@@ -1,6 +1,6 @@
 from beacontools import BeaconScanner, EddystoneTLMFrame, EddystoneFilter
 
-import logging
+import logging, os
 import time, socket, fcntl, struct
 from datetime import datetime
 import timed_log_service as log_service
@@ -14,7 +14,8 @@ interval_unit = 's'     # S - Seconds
                         # midnight - roll over at midnight
                         # W{0-6} - roll over on a certain day; 0 - Monday
 backupCount = 2
-
+if not os.path.exists('logs'):
+    os.makedirs('logs')
 log_file = "logs/timed_test.log"
 rpi_mac = None
 

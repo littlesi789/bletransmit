@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
 
-mongo_db_uri = "mongodb://:27017/BBCT" # TODO: change this...
+mongo_db_uri = None # TODO: change this...
 #---------------------------------Connection-------------------------------------
 try:
     assert mongo_db_uri is not None
@@ -62,9 +62,9 @@ def _write_file_to_database(filename, error_file, append=False, endTime = None):
                 error_list.append(_ent)
         # Search 
         os.remove(filename)
-        print("===")
+        
     
-    print("Error list contains {} entries.".format(len(error_list)))
+    print("Error_list contains {} entries.".format(len(error_list)))
     if len(error_list) != 0:
         # Write the entries with saving error. 
         with open(error_file, mode=write_mode, newline='') as csvfile:
@@ -88,7 +88,7 @@ def _save_to_database(filename, interval):
     # Then write the current logfile
     print("Write the current log", filename)
     _write_file_to_database(filename, error_file1, endTime=end_time_part_2)
-
+    print("===")
 
 
 class myTimeRotateFileHandler(TimedRotatingFileHandler):
