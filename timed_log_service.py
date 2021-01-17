@@ -6,7 +6,7 @@ from logging.handlers import TimedRotatingFileHandler
 import time, socket, fcntl, struct
 
 
-mongo_db_uri = None # TODO: change this...
+mongo_db_uri = 'mongodb://192.168.0.152/BBCT' # TODO: change this...
 #---------------------------------Connection-------------------------------------
 try:
     assert mongo_db_uri is not None
@@ -26,7 +26,6 @@ error_file2 = "logs/error_tier_2.log"
 
 #---------------------------------Helper Functions-------------------------------------
 error_file1_lock = threading.Lock()
-rpi_mac = getHwAddr()
 
 
 def getHwAddr(ifname = 'wlan0'):
@@ -37,13 +36,10 @@ def getHwAddr(ifname = 'wlan0'):
     info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', bytes(ifname, 'utf-8')[:15]))
     return ':'.join('%02x' % b for b in info[18:24])
 
+rpi_mac = getHwAddr()
+
+
 def _write_file_to_database(filename, error_file, append=False, endTime = None):
-    try:
-        ip = os.popen("hostname -I").read().strip()
-        print(ip)
-        x = myip.insert_one({'ip':ip})
-    except Exception as e:
-        print("Failed to write ip address to db. Continue...")
 
     # First to write error data last time
     "Save a log in csv format to json and upload to the database"
@@ -91,6 +87,14 @@ def _save_to_database(filename, interval):
     
     Two tier error files to save entries that fail to be saved to DB
     """
+    try:
+        ip = os.popen("hostname -I").read().strip()
+        print({'rpi_MAC':rpi_mac,'ip':ip})
+        x = myip.insert_one({'rpi_MAC':rpi_mac,'ip':ip})
+    except Exception as e:
+        print("Failed to write ip address to db. Continue...")
+
+
     end_time_part_1 = datetime.now() + timedelta(seconds=int(interval * 0.4))
     end_time_part_2 = datetime.now() + timedelta(seconds=int(interval * 0.8))
     error_file1_lock.acquire()
