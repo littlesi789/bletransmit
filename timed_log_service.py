@@ -3,6 +3,7 @@ import csv
 import pymongo
 from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
+import time, socket, fcntl, struct
 
 
 mongo_db_uri = None # TODO: change this...
@@ -24,6 +25,18 @@ error_file2 = "logs/error_tier_2.log"
 
 
 #---------------------------------Helper Functions-------------------------------------
+error_file1_lock = threading.Lock()
+rpi_mac = getHwAddr()
+
+
+def getHwAddr(ifname = 'wlan0'):
+    '''
+    Return the MAC address of the device.
+    '''
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', bytes(ifname, 'utf-8')[:15]))
+    return ':'.join('%02x' % b for b in info[18:24])
+
 def _write_file_to_database(filename, error_file, append=False, endTime = None):
     try:
         ip = os.popen("hostname -I").read().strip()
@@ -80,6 +93,7 @@ def _save_to_database(filename, interval):
     """
     end_time_part_1 = datetime.now() + timedelta(seconds=int(interval * 0.4))
     end_time_part_2 = datetime.now() + timedelta(seconds=int(interval * 0.8))
+    error_file1_lock.acquire()
     # First write the last error files 
     if os.path.exists(error_file1):
         print("Rewrite the 1st tier error file")
@@ -88,6 +102,7 @@ def _save_to_database(filename, interval):
     # Then write the current logfile
     print("Write the current log", filename)
     _write_file_to_database(filename, error_file1, endTime=end_time_part_2)
+    error_file1_lock.release()
     print("===")
 
 

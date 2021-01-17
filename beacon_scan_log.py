@@ -1,7 +1,7 @@
 from beacontools import BeaconScanner, EddystoneTLMFrame, EddystoneFilter
 
 import logging, os
-import time, socket, fcntl, struct
+import time
 from datetime import datetime
 import timed_log_service as log_service
 
@@ -17,23 +17,18 @@ backupCount = 2
 if not os.path.exists('logs'):
     os.makedirs('logs')
 log_file = "logs/timed_test.log"
-rpi_mac = None
+rpi_mac = log_service.rpi_mac
 
 def callback(bt_addr, rssi, packet, additional_info):
     timestamp = datetime.now()
-    # print( timestamp.isoformat(), bt_addr, rssi, packet.tx_power, packet.major, packet.minor, additional_info)
-    print("New entry:", timestamp.isoformat())
+    print( "New entry:", timestamp.isoformat(), bt_addr, rssi, packet.tx_power, packet.major, packet.minor, additional_info)
+    # print("New entry:", timestamp.isoformat())
     logger.info("{},{},{},{},{},{},{},{}".format(timestamp.isoformat(), bt_addr, rpi_mac, 0, packet.major, packet.minor, rssi, packet.tx_power)) 
 
-def getHwAddr(ifname = 'wlan0'):
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', bytes(ifname, 'utf-8')[:15]))
-    return ':'.join('%02x' % b for b in info[18:24])
 
 if __name__ == "__main__":
 
     print("Get Raspberry Pi MAC address...")
-    rpi_mac = getHwAddr()
     print(rpi_mac)
 
     logger = logging.getLogger("Rotating Log")
