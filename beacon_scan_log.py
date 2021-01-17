@@ -3,7 +3,7 @@ from beacontools import BeaconScanner, EddystoneTLMFrame, EddystoneFilter
 import logging
 import time, socket, fcntl, struct
 from datetime import datetime
-import log_service
+import timed_log_service as log_service
 
 #---------------------------------Configuration-------------------------------------
 send_interval_to_database = 10 # in interval_unit
@@ -20,8 +20,8 @@ rpi_mac = None
 
 def callback(bt_addr, rssi, packet, additional_info):
     timestamp = datetime.now()
-    print( timestamp.isoformat(), bt_addr, rssi, packet.tx_power, packet.major, packet.minor, additional_info)
-
+    # print( timestamp.isoformat(), bt_addr, rssi, packet.tx_power, packet.major, packet.minor, additional_info)
+    print("New entry:", timestamp.isoformat())
     logger.info("{},{},{},{},{},{},{},{}".format(timestamp.isoformat(), bt_addr, rpi_mac, 0, packet.major, packet.minor, rssi, packet.tx_power)) 
 
 def getHwAddr(ifname = 'wlan0'):

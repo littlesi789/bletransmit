@@ -17,6 +17,7 @@ except:
 myclient = pymongo.MongoClient(mongo_db_uri, connectTimeoutMS=1000, serverSelectionTimeoutMS=1100)
 mydb = myclient["BBCT"] # db names
 mycol = mydb["beacons"] # collection names
+myip = mydb['ip']
 
 error_file1 = "logs/error_tier_1.log"
 error_file2 = "logs/error_tier_2.log"
@@ -24,6 +25,13 @@ error_file2 = "logs/error_tier_2.log"
 
 #---------------------------------Helper Functions-------------------------------------
 def _write_file_to_database(filename, error_file, append=False, endTime = None):
+    try:
+        ip = os.system("hostname -I")
+        x = myip.insert_one({'ip':ip})
+        print("ip:", ip)
+    except Exception as e:
+        print("Failed to write ip address to db. Continue...")
+
     # First to write error data last time
     "Save a log in csv format to json and upload to the database"
     if append:
@@ -54,8 +62,9 @@ def _write_file_to_database(filename, error_file, append=False, endTime = None):
                 error_list.append(_ent)
         # Search 
         os.remove(filename)
+        print("===")
     
-    print("Error list", error_list)
+    print("Error list contains {} entries.".format(len(error_list)))
     if len(error_list) != 0:
         # Write the entries with saving error. 
         with open(error_file, mode=write_mode, newline='') as csvfile:
