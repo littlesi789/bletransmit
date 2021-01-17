@@ -9,7 +9,7 @@ from logging.handlers import TimedRotatingFileHandler
 import pymongo
 
 # Connection to the database
-mongo_db_ip_address = None # TODO: change this...
+mongo_db_ip_address = '192.168.0.152' # TODO: change this...
 try:
     assert mongo_db_ip_address is not None
 except:
