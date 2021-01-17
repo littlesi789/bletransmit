@@ -46,6 +46,7 @@ def _write_file_to_database(filename, error_file, append=False):
                 x = mycol.insert_one(_ent)
             except Exception as e:
                 print("Writing errors to db:", _ent, e)
+                _ent["time"] = _ent["time"].isoformat()
                 error_list.append(_ent)
         # Search 
         os.remove(filename)
