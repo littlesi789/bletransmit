@@ -90,7 +90,7 @@ def _save_to_database(filename, interval):
     try:
         ip = os.popen("hostname -I").read().strip()
         print({'rpi_MAC':rpi_mac,'ip':ip})
-        x = myip.insert_one({'rpi_MAC':rpi_mac,'ip':ip})
+        x = myip.insert_one({'rpi_MAC':rpi_mac,'ip':ip, "last_updated_time":datetime.now()})
     except Exception as e:
         print("Failed to write ip address to db. Continue...")
 
