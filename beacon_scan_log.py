@@ -13,7 +13,7 @@ interval_unit = 's'     # S - Seconds
                         # D - Days
                         # midnight - roll over at midnight
                         # W{0-6} - roll over on a certain day; 0 - Monday
-backupCount = 2
+backupCount = 2 # Required but not used. It will not affect anything.
 if not os.path.exists('logs'):
     os.makedirs('logs')
 log_file = "logs/timed_test.log"
@@ -47,5 +47,6 @@ if __name__ == "__main__":
         packet_filter=None
     )
     scanner.start()
-    print("Start to scan for beacons...")
+    print("Start to scan for beacons... (New beacon messages should appear very quickly)\n\
+            If not, check the URI of mongodb, the bluetooth and the beacons.")
 

@@ -15,7 +15,11 @@ except:
                     \nYou need to change the above 'mongo_db_uri' from None to the ip of the database.\
                     \nYou can use ifconfig command in linux to find the ip address...\
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-myclient = pymongo.MongoClient(mongo_db_uri, connectTimeoutMS=1000, serverSelectionTimeoutMS=1100)
+myclient = pymongo.MongoClient(mongo_db_uri, 
+                                connectTimeoutMS=1000,
+                                serverSelectionTimeoutMS=1100, 
+                                socketTimeoutMS=500
+                            )
 mydb = myclient["BBCT"] # db names
 mycol = mydb["beacons"] # collection names
 myip = mydb['ip']
@@ -25,7 +29,7 @@ error_file2 = "logs/error_tier_2.log"
 
 
 #---------------------------------Helper Functions-------------------------------------
-error_file1_lock = threading.Lock()
+error_file1_lock = threading.Lock() # to protect the error log.
 
 
 def getHwAddr(ifname = 'wlan0'):
@@ -50,7 +54,7 @@ def _write_file_to_database(filename, error_file, append=False, endTime = None):
     error_list = []
     # Read the file and write the database
     with open(filename,  newline='') as csvfile:
-        reader = csv.DictReader(csvfile, fieldnames=["time", "beacon_MAC", "pi_MAC", "uuid", "major", "minor", "RSSI", "tx_power"])
+        reader = csv.DictReader(csvfile, fieldnames=["time", "beacon_MAC", "pi_MAC", "uuid(invalid)", "major", "minor", "RSSI", "tx_power(invalid)"])
         log_list = []
         
         for row in reader:
@@ -61,10 +65,11 @@ def _write_file_to_database(filename, error_file, append=False, endTime = None):
                 # _ent["_id"] = 1 # Used for test writing error
                 _ent["time"] = datetime.fromisoformat(_ent["time"])
                 try:
-                    x = mycol.insert_one(_ent)
+                    x = mycol.insert_one(_ent) # Notice here _ent is no longer the previous _ent. An '_id' key will be injected by the mongodb.
                 except Exception as e:
                     print("Writing errors to db:", _ent, e)
                     _ent["time"] = _ent["time"].isoformat()
+                    _ent.pop('_id') # We need to delete the auto-generated '_id' entry to keep consistent with the previous dic format.
                     error_list.append(_ent)
             else:
                 print("Writing time to db exceeded:", _ent)
