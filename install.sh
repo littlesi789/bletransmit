@@ -20,3 +20,5 @@ sudo systemctl enable ble_scan.service
 sudo systemctl start ble_scan
 sudo systemctl enable ble_upload.timer
 sudo systemctl start ble_upload.timer
+
+sudo systemctl daemon-reload

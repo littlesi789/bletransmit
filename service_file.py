@@ -40,7 +40,7 @@ ExecStart={1}  {0}/daily_upload.py
 
 ble_upload_service = ble_upload_service.format(sys.argv[1],sys.argv[2],sys.argv[3])
 file = open("ble_upload.service","w")
-file.write(BLE_scan_service)
+file.write(ble_upload_service)
 file.close()
 
 # Write daily upload service timer

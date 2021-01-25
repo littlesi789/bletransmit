@@ -16,9 +16,9 @@ except:
                     \nYou can use ifconfig command in linux to find the ip address...\
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 myclient = pymongo.MongoClient(mongo_db_uri, 
-                                connectTimeoutMS=500,
-                                serverSelectionTimeoutMS=500, 
-                                socketTimeoutMS=500
+                                connectTimeoutMS=200,
+                                serverSelectionTimeoutMS=200, 
+                                socketTimeoutMS=200
                             )
 mydb = myclient["BBCT"] # db names
 mycol = mydb["beacons"] # collection names
