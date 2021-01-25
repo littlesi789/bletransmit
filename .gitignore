@@ -3,3 +3,5 @@ __pycache__
 database_info.md
 _ignore*
 logs/*
+beacon_scan.py
+timed_test.log

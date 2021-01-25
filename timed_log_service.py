@@ -1,12 +1,12 @@
 import os, threading
-import csv
+import csv, codecs
 import pymongo
 from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 import time, socket, fcntl, struct
 
 
-mongo_db_uri = 'mongodb://192.168.0.152/BBCT' # TODO: change this...
+mongo_db_uri = "mongodb://piclient:82p9vjhk4akp2fd2@192.168.0.109:27017/BBCT" # TODO: change this...
 #---------------------------------Connection-------------------------------------
 try:
     assert mongo_db_uri is not None
@@ -16,8 +16,8 @@ except:
                     \nYou can use ifconfig command in linux to find the ip address...\
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 myclient = pymongo.MongoClient(mongo_db_uri, 
-                                connectTimeoutMS=1000,
-                                serverSelectionTimeoutMS=1100, 
+                                connectTimeoutMS=500,
+                                serverSelectionTimeoutMS=500, 
                                 socketTimeoutMS=500
                             )
 mydb = myclient["BBCT"] # db names
@@ -54,7 +54,7 @@ def _write_file_to_database(filename, error_file, append=False, endTime = None):
     error_list = []
     # Read the file and write the database
     with open(filename,  newline='') as csvfile:
-        reader = csv.DictReader(csvfile, fieldnames=["time", "beacon_MAC", "pi_MAC", "uuid(invalid)", "major", "minor", "RSSI", "tx_power(invalid)"])
+        reader = csv.DictReader(csvfile, fieldnames=["time", "beacon_MAC", "pi_MAC", "uuid", "major", "minor", "RSSI", "tx_power"])
         log_list = []
         
         for row in reader:
@@ -72,7 +72,7 @@ def _write_file_to_database(filename, error_file, append=False, endTime = None):
                     _ent.pop('_id') # We need to delete the auto-generated '_id' entry to keep consistent with the previous dic format.
                     error_list.append(_ent)
             else:
-                print("Writing time to db exceeded:", _ent)
+                print("Writing time to db exceeded:", _ent, endTime)
                 error_list.append(_ent)
         # Search 
         os.remove(filename)
@@ -95,7 +95,7 @@ def _save_to_database(filename, interval):
     try:
         ip = os.popen("hostname -I").read().strip()
         print({'rpi_MAC':rpi_mac,'ip':ip})
-        x = myip.insert_one({'rpi_MAC':rpi_mac,'ip':ip, "last_updated_time":datetime.now()})
+        x = myip.update_one({'rpi_MAC':rpi_mac},{"$set":{'rpi_MAC':rpi_mac,'ip':ip, "last_updated_time":datetime.now()}}, upsert=True)
     except Exception as e:
         print("Failed to write ip address to db. Continue...")
 

@@ -12,8 +12,11 @@ python service_file.py $current_dir $python_dir $user_name # set up workingDirec
 
 echo "Move service files to systemd"
 sudo mv ble_scan.service /lib/systemd/system/
-
+sudo mv ble_upload.service /lib/systemd/system/
+sudo mv ble_upload.timer /lib/systemd/system/
 
 echo "Start systemd service for server and pull data"
 sudo systemctl enable ble_scan.service
 sudo systemctl start ble_scan
+sudo systemctl enable ble_upload.timer
+sudo systemctl start ble_upload.timer
