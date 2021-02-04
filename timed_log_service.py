@@ -6,7 +6,7 @@ from logging.handlers import TimedRotatingFileHandler
 import time, socket, fcntl, struct
 
 
-mongo_db_uri = "mongodb://piclient:82p9vjhk4akp2fd2@192.168.0.109:27017/BBCT" # TODO: change this...
+mongo_db_uri = "mongodb://piclient:82p9vjhk4akp2fd2@172.16.10.202:27017/BBCT" # TODO: change this...
 #---------------------------------Connection-------------------------------------
 try:
     assert mongo_db_uri is not None
@@ -65,7 +65,8 @@ def _write_file_to_database(filename, error_file, append=False, endTime = None):
                 # _ent["_id"] = 1 # Used for test writing error
                 _ent["time"] = datetime.fromisoformat(_ent["time"])
                 try:
-                    x = mycol.insert_one(_ent) # Notice here _ent is no longer the previous _ent. An '_id' key will be injected by the mongodb.
+                    x = mycol.update_one({"beacon_MAC":_ent["beacon_MAC"], "pi_MAC":_ent["pi_MAC"], "time":_ent["time"]}, 
+                                        {"$set":_ent}, upsert=True) # Notice here _ent is no longer the previous _ent. An '_id' key will be injected by the mongodb.
                 except Exception as e:
                     print("Writing errors to db:", _ent, e)
                     _ent["time"] = _ent["time"].isoformat()
