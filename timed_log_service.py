@@ -16,9 +16,9 @@ except:
                     \nYou can use ifconfig command in linux to find the ip address...\
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 myclient = pymongo.MongoClient(mongo_db_uri, 
-                                connectTimeoutMS=200,
-                                serverSelectionTimeoutMS=200, 
-                                socketTimeoutMS=200
+                                connectTimeoutMS=300,
+                                serverSelectionTimeoutMS=300, 
+                                socketTimeoutMS=300
                             )
 mydb = myclient["BBCT"] # db names
 mycol = mydb["beacons"] # collection names
@@ -27,6 +27,9 @@ myip = mydb['ip']
 error_file1 = "logs/error_tier_1.log"
 error_file2 = "logs/error_tier_2.log"
 
+
+ip = os.popen("hostname -I").read().strip()
+hostname = socket.gethostname()
 
 #---------------------------------Helper Functions-------------------------------------
 error_file1_lock = threading.Lock() # to protect the error log.
@@ -94,11 +97,11 @@ def _save_to_database(filename, interval):
     Two tier error files to save entries that fail to be saved to DB
     """
     try:
-        ip = os.popen("hostname -I").read().strip()
+        
         print({'rpi_MAC':rpi_mac,'ip':ip})
-        x = myip.update_one({'rpi_MAC':rpi_mac},{"$set":{'rpi_MAC':rpi_mac,'ip':ip, "last_updated_time":datetime.now()}}, upsert=True)
+        x = myip.update_one({'rpi_MAC':rpi_mac},{"$set":{'rpi_MAC':rpi_mac,'ip':ip, 'hostname':hostname, "last_updated_time":datetime.now()}}, upsert=True)
     except Exception as e:
-        print("Failed to write ip address to db. Continue...")
+        print("Failed to write ip address to db. Continue...", e)
 
 
     end_time_part_1 = datetime.now() + timedelta(seconds=int(interval * 0.4))
