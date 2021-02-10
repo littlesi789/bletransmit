@@ -1,4 +1,4 @@
-from beacontools import BeaconScanner, EddystoneTLMFrame, EddystoneFilter
+from beacontools import BeaconScanner, EddystoneTLMFrame, EddystoneFilter, IBeaconFilter, IBeaconAdvertisement
 
 import logging, os
 import time
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     scanner = BeaconScanner(callback,
         # remove the following line to see packets from all beacons
         device_filter=None,
-        packet_filter=None
+        packet_filter=IBeaconAdvertisement
     )
     scanner.start()
     print("Start to scan for beacons... (New beacon messages should appear very quickly)\n\

@@ -4,6 +4,8 @@ echo "!!! sudo needed to run this script!!!"
 echo "Install Linux Bluetooth package"
 sudo apt-get -y install libbluetooth-dev libcap2-bin
 
+sudo setcap 'cap_net_raw,cap_net_admin+eip' "$(readlink -f "$(which python3)")"
+
 echo "Install python requirements..."
 sudo pip3 install -r requirements.txt  
 

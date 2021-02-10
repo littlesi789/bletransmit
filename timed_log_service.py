@@ -6,7 +6,7 @@ from logging.handlers import TimedRotatingFileHandler
 import time, socket, fcntl, struct
 
 
-mongo_db_uri = "mongodb://piclient:82p9vjhk4akp2fd2@172.16.10.202:27017/BBCT" # TODO: change this...
+mongo_db_uri = "mongodb://piclient:82p9vjhk4akp2fd2@bbct-cpsl.engr.wustl.edu:27017/BBCT" # TODO: change this...
 #---------------------------------Connection-------------------------------------
 try:
     assert mongo_db_uri is not None
