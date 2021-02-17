@@ -56,31 +56,33 @@ def _write_file_to_database(filename, error_file, append=False, endTime = None):
         write_mode = 'w'
     error_list = []
     # Read the file and write the database
-    with open(filename,  newline='') as csvfile:
-        reader = csv.DictReader(csvfile, fieldnames=["time", "beacon_MAC", "pi_MAC", "uuid", "major", "minor", "RSSI", "tx_power"])
-        log_list = []
-        
-        for row in reader:
-            log_list.append(row)
+    try: 
+        with open(filename,  newline='') as csvfile:
+            reader = csv.DictReader(csvfile, fieldnames=["time", "beacon_MAC", "pi_MAC", "uuid", "major", "minor", "RSSI", "tx_power"])
+            log_list = []
             
-        for _ent in log_list:
-            if endTime is not None and datetime.now() < endTime:
-                # _ent["_id"] = 1 # Used for test writing error
-                _ent["time"] = datetime.fromisoformat(_ent["time"])
-                try:
-                    x = mycol.update_one({"beacon_MAC":_ent["beacon_MAC"], "pi_MAC":_ent["pi_MAC"], "time":_ent["time"]}, 
-                                        {"$set":_ent}, upsert=True) # Notice here _ent is no longer the previous _ent. An '_id' key will be injected by the mongodb.
-                except Exception as e:
-                    print("Writing errors to db:", _ent, e)
-                    _ent["time"] = _ent["time"].isoformat()
-                    _ent.pop('_id') # We need to delete the auto-generated '_id' entry to keep consistent with the previous dic format.
+            for row in reader:
+                log_list.append(row)
+                
+            for _ent in log_list:
+                if endTime is not None and datetime.now() < endTime:
+                    # _ent["_id"] = 1 # Used for test writing error
+                    _ent["time"] = datetime.fromisoformat(_ent["time"])
+                    try:
+                        x = mycol.update_one({"beacon_MAC":_ent["beacon_MAC"], "pi_MAC":_ent["pi_MAC"], "time":_ent["time"]}, 
+                                            {"$set":_ent}, upsert=True) # Notice here _ent is no longer the previous _ent. An '_id' key will be injected by the mongodb.
+                    except Exception as e:
+                        print("Writing errors to db:", _ent, e)
+                        _ent["time"] = _ent["time"].isoformat()
+                        _ent.pop('_id') # We need to delete the auto-generated '_id' entry to keep consistent with the previous dic format.
+                        error_list.append(_ent)
+                else:
+                    print("Writing time to db exceeded:", _ent, endTime)
                     error_list.append(_ent)
-            else:
-                print("Writing time to db exceeded:", _ent, endTime)
-                error_list.append(_ent)
-        # Search 
-        os.remove(filename)
-        
+            # Search 
+            os.remove(filename)
+    except Exception as e:
+        print("File error:",e)
     
     print("Error_list contains {} entries.".format(len(error_list)))
     if len(error_list) != 0:
