@@ -4,6 +4,7 @@ import pymongo
 from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 import time, socket, fcntl, struct
+import traceback
 
 
 mongo_db_uri = "mongodb://piclient:82p9vjhk4akp2fd2@bbct-cpsl.engr.wustl.edu:27017/BBCT" # TODO: change this...
@@ -83,6 +84,7 @@ def _write_file_to_database(filename, error_file, append=False, endTime = None):
             os.remove(filename)
     except Exception as e:
         print("File error:",e)
+        traceback.print_exc()
     
     print("Error_list contains {} entries.".format(len(error_list)))
     if len(error_list) != 0:
