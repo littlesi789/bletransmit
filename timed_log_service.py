@@ -75,7 +75,7 @@ def _write_file_to_database(filename, error_file, append=False, endTime = None):
                     except Exception as e:
                         print("Writing errors to db:", _ent, e)
                         _ent["time"] = _ent["time"].isoformat()
-                        _ent.pop('_id') # We need to delete the auto-generated '_id' entry to keep consistent with the previous dic format.
+                        if "_id" in _ent.keys(): _ent.pop('_id') # We need to delete the auto-generated '_id' entry to keep consistent with the previous dic format.
                         error_list.append(_ent)
                 else:
                     print("Writing time to db exceeded:", _ent, endTime)
