@@ -1,4 +1,4 @@
-import os, threading
+import os, threading, copy
 import csv, codecs
 import pymongo
 from datetime import datetime, timedelta
@@ -27,7 +27,7 @@ myip = mydb['ip']
 
 error_file1 = "logs/error_tier_1.log"
 error_file2 = "logs/error_tier_2.log"
-
+batch_size = 30
 
 ip = os.popen("hostname -I").read().strip()
 hostname = socket.gethostname()
@@ -64,23 +64,21 @@ def _write_file_to_database(filename, error_file, append=False, endTime = None):
             
             for row in reader:
                 log_list.append(row)
-                
-            for _ent in log_list:
+            intervals = list(range(0, len(log_list), batch_size)) + [len(log_list)]
+            for _idx in range(0, len(intervals) - 1):
+                batch_entry = log_list[intervals[_idx]:intervals[_idx+1]]
+                batch_copy = copy.deepcopy(batch_entry) # For insert fail backup
                 if endTime is not None and datetime.now() < endTime:
-                    # _ent["_id"] = 1 # Used for test writing error
-                    _ent["time"] = datetime.fromisoformat(_ent["time"])
+                    for _ent in batch_entry:
+                        _ent["time"] = datetime.fromisoformat(_ent["time"])
                     try:
-                        x = mycol.update_one({"beacon_MAC":_ent["beacon_MAC"], "pi_MAC":_ent["pi_MAC"], "time":_ent["time"]}, 
-                                            {"$set":_ent}, upsert=True) # Notice here _ent is no longer the previous _ent. An '_id' key will be injected by the mongodb.
+                        x = mycol.insert_many(batch_entry)
                     except Exception as e:
-                        print("Writing errors to db:", _ent, e)
-                        _ent["time"] = _ent["time"].isoformat()
-                        if "_id" in _ent.keys(): _ent.pop('_id') # We need to delete the auto-generated '_id' entry to keep consistent with the previous dic format.
-                        error_list.append(_ent)
+                        print("Writing errors to db:", e)
+                        error_list += batch_copy 
                 else:
-                    print("Writing time to db exceeded:", _ent, endTime)
-                    error_list.append(_ent)
-            # Search 
+                    print("Writing time to db exceeded:", endTime)
+                    error_list += batch_copy 
             os.remove(filename)
     except Exception as e:
         print("File error:",e)
