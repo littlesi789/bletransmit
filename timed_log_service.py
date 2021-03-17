@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 import time, socket, fcntl, struct
 import traceback
-
+from beacon_scan import rpi_mac, ip, hostname
 
 mongo_db_uri = "mongodb://piclient:82p9vjhk4akp2fd2@bbct-cpsl.engr.wustl.edu:27017/BBCT" # TODO: change this...
 #---------------------------------Connection-------------------------------------
@@ -23,28 +23,15 @@ myclient = pymongo.MongoClient(mongo_db_uri,
                             )
 mydb = myclient["BBCT"] # db names
 mycol = mydb["beacons"] # collection names
-myip = mydb['ip']
+db_ip_col = mydb['ip']
 
 error_file1 = "logs/error_tier_1.log"
 error_file2 = "logs/error_tier_2.log"
 batch_size = 30
 
-ip = os.popen("hostname -I").read().strip()
-hostname = socket.gethostname()
 
 #---------------------------------Helper Functions-------------------------------------
 error_file1_lock = threading.Lock() # to protect the error log.
-
-
-def getHwAddr(ifname = 'wlan0'):
-    '''
-    Return the MAC address of the device.
-    '''
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', bytes(ifname, 'utf-8')[:15]))
-    return ':'.join('%02x' % b for b in info[18:24])
-
-rpi_mac = getHwAddr()
 
 
 def _write_file_to_database(filename, error_file, append=False, endTime = None):
@@ -99,9 +86,7 @@ def _save_to_database(filename, interval):
     Two tier error files to save entries that fail to be saved to DB
     """
     try:
-        
-        print({'rpi_MAC':rpi_mac,'ip':ip})
-        x = myip.update_one({'rpi_MAC':rpi_mac},{"$set":{'rpi_MAC':rpi_mac,'ip':ip, 'hostname':hostname, "last_updated_time":datetime.now()}}, upsert=True)
+        x = db_ip_col.update_one({'pi_MAC':rpi_mac},{"$set":{'pi_MAC':rpi_mac,'ip':ip, 'hostname':hostname, "last_updated_time":datetime.now()}}, upsert=True)
     except Exception as e:
         print("Failed to write ip address to db. Continue...", e)
 
