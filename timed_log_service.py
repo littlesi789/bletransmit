@@ -3,9 +3,9 @@ import csv, codecs
 import pymongo
 from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
-import time, socket, fcntl, struct
+import time, socket
 import traceback
-from beacon_scan import rpi_mac, ip, hostname
+from beacon_scan_log import getHwAddr, log_dir
 
 mongo_db_uri = "mongodb://piclient:82p9vjhk4akp2fd2@bbct-cpsl.engr.wustl.edu:27017/BBCT" # TODO: change this...
 #---------------------------------Connection-------------------------------------
@@ -23,12 +23,15 @@ myclient = pymongo.MongoClient(mongo_db_uri,
                             )
 mydb = myclient["BBCT"] # db names
 mycol = mydb["beacons"] # collection names
-db_ip_col = mydb['ip']
+db_ip_col = mydb['ip'] # ip collection names
 
-error_file1 = "logs/error_tier_1.log"
-error_file2 = "logs/error_tier_2.log"
+error_file1 = log_dir + "/error_tier_1.log"
+error_file2 = log_dir + "/error_tier_2.log"
 batch_size = 30
 
+rpi_mac = getHwAddr()
+ip = os.popen("hostname -I").read().strip()
+hostname = socket.gethostname()
 
 #---------------------------------Helper Functions-------------------------------------
 error_file1_lock = threading.Lock() # to protect the error log.
@@ -136,3 +139,29 @@ class myTimeRotateFileHandler(TimedRotatingFileHandler):
 
     def getFilesToDelete(self):
         return []
+
+
+class Heartbeat(threading.Thread):
+    """
+    Background service to update the status of the Pi
+    """
+    def __init__(self, interval):
+        threading.Thread.__init__(self)
+        self.interval = interval
+        
+    def run(self):
+        while True:
+            try:
+                error_file2_size = 0
+                if os.path.exists(error_file2):
+                    error_file2_size = os.path.getsize(error_file2)
+                num_log_files = len(os.listdir(log_dir))
+            except Exception as e:
+                print("Read log info error", e)
+            try:
+                x = db_ip_col.update_one({'pi_MAC':rpi_mac},{"$set":{'pi_MAC':rpi_mac,'ip':ip, 'hostname':hostname, 
+                                    "num_log_files": num_log_files, "error2_size": error_file2_size,
+                                    "last_heartbeat_time":datetime.now()}}, upsert=True)
+            except Exception as e:
+                print("Write heartbeat info error", e)
+            time.sleep(self.interval)

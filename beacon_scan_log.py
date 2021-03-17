@@ -1,9 +1,9 @@
 from beacontools import BeaconScanner, EddystoneTLMFrame, EddystoneFilter, IBeaconFilter, IBeaconAdvertisement
 
-import logging, os
+import logging, os, socket, fcntl, struct
 import time, threading
 from datetime import datetime
-import timed_log_service as log_service, db_ip_col, error_file2
+import timed_log_service as log_service
 
 #---------------------------------Configuration-------------------------------------
 send_interval_to_database = 20 # in interval_unit
@@ -18,12 +18,9 @@ heartbeat_interval = 10
 log_dir = "logs"
 log_file = "logs/timed_test.log"
 
-
-if not os.path.exists(log_dir):
-    os.makedirs(log_dir)
-rpi_mac = getHwAddr()
-ip = os.popen("hostname -I").read().strip()
-hostname = socket.gethostname()
+rpi_mac = ""
+ip = ""
+hostname = ""
 
 
 def callback(bt_addr, rssi, packet, additional_info):
@@ -41,36 +38,12 @@ def getHwAddr(ifname = 'wlan0'):
     return ':'.join('%02x' % b for b in info[18:24])
 
 
-class Heartbeat(threading.Thread):
-    """
-    Background service to update the status of the Pi
-    """
-    def __init__(self, interval):
-        threading.Thread.__init__(self)
-        self.interval = interval
-        self.args = args
-        self.kwargs = kwargs
-        
-    def run(self):
-        try:
-            error_file2_size = 0
-            if os.path.exists(error_file2):
-                error_file2_size = os.path.getsize(error_file2)
-            num_log_files = len(os.listdir(log_dir))
-        except:
-            print("Read log info error")
-        try:
-            x = db_ip_col.update_one({'pi_MAC':rpi_mac},{"$set":{'pi_MAC':rpi_mac,'ip':ip, 'hostname':hostname, 
-                                "num_log_files": num_log_files, "error2_size": error_file2_size,
-                                "last_heartbeat_time":datetime.now()}}, upsert=True)
-        except:
-            print("Write heartbeat info error")
-        time.sleep(self.interval)
-
-
 if __name__ == "__main__":
 
     print("Get Raspberry Pi MAC address...")
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    rpi_mac = getHwAddr()
     print(rpi_mac)
 
     logger = logging.getLogger("Rotating Log")
@@ -81,7 +54,8 @@ if __name__ == "__main__":
                                         interval=send_interval_to_database,
                                         backupCount=backupCount)
     logger.addHandler(handler)
-    hr_service = Heartbeat(heartbeat_interval)
+    hr_service = log_service.Heartbeat(heartbeat_interval)
+    hr_service.start()
 
     # scan for all TLM frames of beacons in the namespace "12345678901234678901"
     scanner = BeaconScanner(callback,
