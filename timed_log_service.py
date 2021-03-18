@@ -150,6 +150,7 @@ class Heartbeat(threading.Thread):
         
     def run(self):
         while True:
+            ip = os.popen("hostname -I").read().strip() # IP could be lost, so that we need to refresh IP
             try:
                 error_file2_size = 0
                 if os.path.exists(error_file2):
