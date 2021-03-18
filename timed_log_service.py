@@ -17,9 +17,9 @@ except:
                     \nYou can use ifconfig command in linux to find the ip address...\
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 myclient = pymongo.MongoClient(mongo_db_uri, 
-                                connectTimeoutMS=300,
-                                serverSelectionTimeoutMS=300, 
-                                socketTimeoutMS=300
+                                connectTimeoutMS=1500,
+                                serverSelectionTimeoutMS=1500, 
+                                socketTimeoutMS=1500
                             )
 mydb = myclient["BBCT"] # db names
 mycol = mydb["beacons"] # collection names
@@ -27,7 +27,6 @@ db_ip_col = mydb['ip'] # ip collection names
 
 error_file1 = log_dir + "/error_tier_1.log"
 error_file2 = log_dir + "/error_tier_2.log"
-batch_size = 30
 
 rpi_mac = getHwAddr()
 ip = os.popen("hostname -I").read().strip()
@@ -37,7 +36,7 @@ hostname = socket.gethostname()
 error_file1_lock = threading.Lock() # to protect the error log.
 
 
-def _write_file_to_database(filename, error_file, append=False, endTime = None):
+def _write_file_to_database(filename, error_file, append=False, endTime = None, batch_size=30):
 
     # First to write error data last time
     "Save a log in csv format to json and upload to the database"
