@@ -12,7 +12,7 @@ sudo pip3 install -r requirements.txt
 echo "Setup service file"
 current_dir=`pwd`
 python_dir=`which python3`
-user_name=$(logname)
+user_name=pi
 python3 service_file.py $current_dir $python_dir $user_name # set up workingDirector in the service file
 
 echo "Move service files to systemd"
