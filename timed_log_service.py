@@ -88,7 +88,7 @@ def _save_to_database(filename, interval):
     Two tier error files to save entries that fail to be saved to DB
     """
     try:
-        x = db_ip_col.update_one({'pi_MAC':rpi_mac},{"$set":{'pi_MAC':rpi_mac,'ip':ip, 'hostname':hostname, "last_updated_time":datetime.now()}}, upsert=True)
+        x = db_ip_col.update_one({'pi_MAC':rpi_mac},{"$set":{'pi_MAC':rpi_mac,'ip':ip, 'hostname':hostname, "last_upload_time":datetime.now()}}, upsert=True)
     except Exception as e:
         print("Failed to write ip address to db. Continue...", e)
 

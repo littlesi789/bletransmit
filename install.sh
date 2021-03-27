@@ -20,10 +20,12 @@ sudo mv ble_scan.service /lib/systemd/system/
 sudo mv ble_upload.service /lib/systemd/system/
 sudo mv ble_upload.timer /lib/systemd/system/
 
+sudo systemctl daemon-reload
+
 echo "Start systemd service for server and pull data"
 sudo systemctl enable ble_scan.service
 sudo systemctl start ble_scan
 sudo systemctl enable ble_upload.timer
 sudo systemctl start ble_upload.timer
 
-sudo systemctl daemon-reload
+
