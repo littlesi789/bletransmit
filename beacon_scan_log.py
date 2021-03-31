@@ -6,7 +6,7 @@ from datetime import datetime
 import timed_log_service as log_service
 
 #---------------------------------Configuration-------------------------------------
-send_interval_to_database = 20 # in interval_unit
+send_interval_to_database = 30 # in interval_unit
 interval_unit = 's'     # S - Seconds
                         # M - Minutes
                         # H - Hours
@@ -14,7 +14,7 @@ interval_unit = 's'     # S - Seconds
                         # midnight - roll over at midnight
                         # W{0-6} - roll over on a certain day; 0 - Monday
 backupCount = 2 # Required but not used. It will not affect anything.
-heartbeat_interval = 10
+heartbeat_interval = 15
 log_dir = "logs"
 log_file = "logs/timed_test.log"
 
