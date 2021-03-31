@@ -49,7 +49,7 @@ ble_upload_timer="""[Unit]
 Description=BLE_scan daily upload service timer
 
 [Timer]
-OnCalendar=*-*-* **:00:00
+OnCalendar=*-*-* *:00:00
 Persistent=true
 [Install]
 WantedBy=timers.target
