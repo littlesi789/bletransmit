@@ -48,7 +48,7 @@ def _write_file_to_database(filename, error_file, append=False, endTime = None, 
     # Read the file and write the database
     try: 
         with open(filename,  newline='') as csvfile:
-            reader = csv.DictReader(csvfile, fieldnames=["time", "beacon_MAC", "pi_MAC", "uuid", "major", "minor", "RSSI", "tx_power"])
+            reader = csv.DictReader([line for line in csvfile if line.find('\0') == -1], fieldnames=["time", "beacon_MAC", "pi_MAC", "uuid", "major", "minor", "RSSI", "tx_power"])
             log_list = []
             
             for row in reader:
