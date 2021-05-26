@@ -24,6 +24,7 @@ myclient = pymongo.MongoClient(mongo_db_uri,
 mydb = myclient["BBCT"] # db names
 mycol = mydb["beacons"] # collection names
 db_ip_col = mydb['ip'] # ip collection names
+db_history_col = mydb['anchor_history']
 
 error_file1 = log_dir + "/error_tier_1.log"
 error_file2 = log_dir + "/error_tier_2.log"
@@ -159,9 +160,13 @@ class Heartbeat(threading.Thread):
             except Exception as e:
                 print("Read log info error", e)
             try:
+                cur_time = datetime.now()
                 x = db_ip_col.update_one({'pi_MAC':rpi_mac},{"$set":{'pi_MAC':rpi_mac,'ip':ip, 'hostname':hostname, 
                                     "num_log_files": num_log_files, "error2_size": error_file2_size,
-                                    "last_heartbeat_time":datetime.now()}}, upsert=True)
+                                    "last_heartbeat_time":cur_time}}, upsert=True)
+                x = db_history_col.insert_one({'pi_MAC':rpi_mac,'ip':ip, 'hostname':hostname, 
+                                    "num_log_files": num_log_files, "error2_size": error_file2_size,
+                                    "last_heartbeat_time":cur_time})
             except Exception as e:
                 print("Write heartbeat info error", e)
             time.sleep(self.interval)
